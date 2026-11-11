@@ -4,9 +4,11 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AiService } from 'src/modules/ai/ai.service';
+import { JwtAuthGuard } from 'src/modules/auth/features/jwt-auth.guard';
 
 type UploadedAudioFile = {
   buffer: Buffer;
@@ -17,6 +19,7 @@ type UploadedAudioFile = {
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('voice-prompt')
   @UseInterceptors(FileInterceptor('file'))
   async handleVoicePrompt(@UploadedFile() file?: UploadedAudioFile) {

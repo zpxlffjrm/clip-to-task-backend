@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from 'src/modules/auth/features/auth.module';
 import { MeetingProgressModule } from 'src/modules/meetings/features/meeting-progress.module';
 import { MeetingsDataModule } from 'src/modules/meetings/features/meetings-data.module';
@@ -10,6 +11,7 @@ import { UserModule } from 'src/modules/users/feastures/user.module';
 
 @Module({
   imports: [
+    ConfigModule,
     AuthModule,
     MeetingsDataModule,
     MeetingProgressModule,

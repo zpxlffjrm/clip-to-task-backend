@@ -10,6 +10,10 @@ export class UserService {
     return this.userRepository.getUser(id);
   }
 
+  async getUserByUuid(uuid: string) {
+    return this.userRepository.getUserByUuid(uuid);
+  }
+
   async updateUserDeviceToken(dto: UpdateUserDeviceTokenDto) {
     return this.userRepository.updateUserDeviceToken(dto);
   }

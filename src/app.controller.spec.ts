@@ -18,7 +18,9 @@ describe('AppController', () => {
   describe('root', () => {
     it('should stream Korean characters one by one via SSE', async () => {
       const events = await firstValueFrom(
-        appController.getHello().pipe(take(5), toArray()),
+        appController
+          .getHello({ headers: {} } as unknown as Request)
+          .pipe(take(5), toArray()),
       );
 
       expect(events.map((event) => event.data)).toEqual([
