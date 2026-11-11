@@ -9,6 +9,7 @@ import { AuthModule } from 'src/modules/auth/features/auth.module';
 import { MeetingsModule } from 'src/modules/meetings/features/meetings.module';
 import { UserModule } from 'src/modules/users/feastures/user.module';
 import { DashboardModule } from 'src/modules/dashboard/features/dashboard.module';
+import { ActionItemsModule } from 'src/modules/action-items/features/action-items.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DashboardModule } from 'src/modules/dashboard/features/dashboard.module
     MeetingsModule,
     UserModule,
     DashboardModule,
+    ActionItemsModule,
     MongooseModule.forRoot(process.env.MONGODB_URI as string),
   ],
   controllers: [AppController],
