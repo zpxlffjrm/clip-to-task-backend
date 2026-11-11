@@ -12,6 +12,12 @@ export class UserRepository {
     });
   }
 
+  async getUserByUuid(uuid: string) {
+    return this.prisma.user.findUnique({
+      where: { uuid },
+    });
+  }
+
   async updateUserDeviceToken(dto: UpdateUserDeviceTokenDto) {
     console.log('dto', dto);
     return this.prisma.user.update({

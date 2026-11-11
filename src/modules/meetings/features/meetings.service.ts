@@ -57,10 +57,11 @@ export class MeetingsService {
 
   // Presigned URL 발급 및 레코드 생성
   async createRecord(
+    userUuid: string,
     dto: CreateRecordReqDto,
   ): Promise<{ uploadUrl: string; meetingId: string }> {
-    const { userId, fileName, fileType } = dto;
-    const user = await this.userService.getUser(userId);
+    const { fileName, fileType } = dto;
+    const user = await this.userService.getUserByUuid(userUuid);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -76,7 +77,7 @@ export class MeetingsService {
 
     const { uploadUrl, fileKey } =
       await this.storageService.getUploadPresignedUrl(
-        userId,
+        user.id,
         new Date().getTime().toString().concat(fileName),
         fileType,
       );

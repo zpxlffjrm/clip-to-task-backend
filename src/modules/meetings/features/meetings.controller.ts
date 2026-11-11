@@ -11,6 +11,7 @@ import {
   CurrentUser,
   type CurrentUserPayload,
 } from 'src/common/decorators/current-user.decorator';
+import { WebhookSecretGuard } from 'src/common/guards/webhook-secret.guard';
 import { JwtAuthGuard } from 'src/modules/auth/features/jwt-auth.guard';
 import { CloudfrontWebHookReqDto } from 'src/modules/meetings/dtos/req/CloudfrontWebHoolReq.dto';
 import { CreateRecordReqDto } from 'src/modules/meetings/dtos/req/CreateRecordReq.dto';
@@ -45,17 +46,20 @@ export class MeetingsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createMeeting(
+    @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateRecordReqDto,
   ): Promise<{ uploadUrl: string; meetingId: string }> {
-    return await this.meetingsService.createRecord(dto);
+    return await this.meetingsService.createRecord(user.userId, dto);
   }
 
+  @UseGuards(WebhookSecretGuard)
   @Post('cloudfront-upload-webhook')
   async cloudfrontWebHook(@Body() dto: CloudfrontWebHookReqDto): Promise<void> {
     console.log(dto);
     return await this.meetingsService.cloudfrontUploadWebHook(dto);
   }
 
+  @UseGuards(WebhookSecretGuard)
   @Post('cloudfront-audio-webhook')
   async cloudfrontAudioWebHook(
     @Body() dto: CloudfrontWebHookReqDto,
