@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["users", "auth"]
+}
+
+model User {
+  uuid                String   @id @db.Uuid
+  id                  String   @unique @db.Char(20)
+  password            String   @db.VarChar
+  email               String   @unique @db.VarChar
+  name                String?  @db.VarChar
+  created_at          DateTime @db.Timestamptz(3)
+  updated_at          DateTime @db.Timestamptz(3)
+  password_changed_at DateTime @db.Timestamptz(3)
+  device_token        String?  @db.VarChar
+
+  token    Token[]
+  credit   UserCredit?
+  meetings MeetingRecord[]
+  logs     CreditLog[]
+  action_items ActionItem[]
+
+
+  @@map("tb_users")
+  @@schema("users")
+}
+
+model Token {
+  user_id       String  @id @db.Uuid
+  user          User    @relation(fields: [user_id], references: [uuid])
+  access_token  String? @db.VarChar
+  refresh_token String? @db.VarChar
+
+  @@map("tb_token")
+  @@schema("auth")
+}
+
+model UserCredit {
+  id      String @id @default(uuid()) @db.Uuid
+  user_id String @unique @db.Uuid
+  balance Int    @default(0)
+
+  user User @relation(fields: [user_id], references: [uuid])
+
+  @@map("tb_user_credits")
+  @@schema("users")
+}
+
+model CreditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  amount     Int
+  reason     String   @db.VarChar
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [user_id], references: [uuid])
+
+  @@map("tb_credit_logs")
+  @@schema("users")
+}
+
+model MeetingRecord {
+  id               String    @id @default(uuid()) @db.Uuid
+  user_id          String    @db.Uuid
+  title            String?   @db.VarChar
+  status           JobStatus @default(PENDING)
+  file_url         String    @db.VarChar
+  duration_sec     Int?
+  mongo_result_id  String?   @db.Char(24)
+  error_message    String?   @db.VarChar
+  progress_percent Int       @default(0)
+  created_at       DateTime  @default(now()) @db.Timestamptz(3)
+  updated_at       DateTime  @updatedAt @db.Timestamptz(3)
+
+  user User @relation(fields: [user_id], references: [uuid])
+
+  action_items ActionItem[]
+  participants MeetingParticipant[]
+
+  @@map("tb_meeting_records")
+  @@schema("users")
+}
+
+model ActionItem {
+  id                String    @id @default(uuid()) @db.Uuid
+  meeting_record_id String    @db.Uuid
+  user_id           String    @db.Uuid // denormalize — 랜딩/대시보드 조회용
+  assignee          String    @db.VarChar
+  task              String    @db.Text
+  deadline          String?   @db.Text
+  is_completed      Boolean   @default(false)
+  created_at        DateTime  @default(now()) @db.Timestamptz(3)
+  meeting           MeetingRecord @relation(fields: [meeting_record_id], references: [id])
+  user              User          @relation(fields: [user_id], references: [uuid])
+
+  @@index([user_id, is_completed, deadline]) // 랜딩 + 대시보드
+  @@index([meeting_record_id])
+  @@map("tb_action_items")
+  @@schema("users")
+}
+
+model MeetingParticipant {
+  id                String   @id @default(uuid()) @db.Uuid
+  meeting_record_id String   @db.Uuid
+  name              String   @db.VarChar
+  speaker_label     String?  @db.VarChar
+  created_at        DateTime @default(now()) @db.Timestamptz(3)
+
+  meeting MeetingRecord @relation(fields: [meeting_record_id], references: [id])
+
+  @@index([meeting_record_id])
+  @@map("tb_meeting_participants")
+  @@schema("users")
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED_UNPROCESSABLE
+  REJECTED_VIOLATION
+
+  @@schema("users")
+}
